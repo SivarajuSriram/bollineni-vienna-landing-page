@@ -1,0 +1,306 @@
+@import "tailwindcss";
+
+/*
+ * Site palette + fonts, as real Tailwind tokens (bg-beige, text-ink,
+ * font-heading, etc.) instead of writing var(--...) everywhere.
+ */
+@theme {
+  --color-beige: #fbf8f1;
+  --color-khaki: #efe9dd;
+  --color-ink: #0c0c0c;
+  --color-neutral-light: #aaaaaa;
+  --color-neutral-lighter: #cccccc;
+
+  --font-heading: var(--font-cormorant), serif;
+  --font-body: var(--font-jakarta), sans-serif;
+
+  /* Match the site's existing breakpoints, so new Tailwind classes and the
+     legacy CSS switch at the same widths. Use as max-lg:/max-md:/max-sm:
+     (Webflow's CSS is desktop-first, so we override going down, not up). */
+  --breakpoint-lg: 992px;
+  --breakpoint-md: 768px;
+  --breakpoint-sm: 480px;
+
+  /* iPad landscape (1024px on a standard iPad, up to ~1194px on iPad Pro
+     11") sits above --breakpoint-lg, so without this it silently inherits
+     the full desktop layout -- dense multi-column grids and vw-spacing
+     tuned for 1440-1920px monitors. Use `lg:max-xl:` to target just this
+     band (992-1239px) without touching true desktop (xl:, >=1240px) or the
+     existing mobile/tablet-portrait tier (max-lg:, <992px). */
+  --breakpoint-xl: 1240px;
+}
+
+@layer base {
+
+html {
+  height: 100%;
+}
+
+/* Native smooth scrolling for anchor-link jumps (nav menu, "Book Now",
+   footer links) -- only affects programmatic/anchor scrolls, not user
+   wheel/touch scrolling, which stays untouched native scrolling (fastest
+   possible, and the one thing guaranteed to work correctly on iOS). */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  height: 100%;
+  min-height: 100%;
+  margin: 0;
+  background-color: var(--color-beige);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 1vw;
+  font-weight: 400;
+  line-height: 1.5;
+  @media (max-width: 991px) {
+    font-size: 1rem;
+  }
+  @media (max-width: 767px) {
+    font-size: 0.9rem;
+  }
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
+
+/* Fluid body-text sizing that plain <p>/<a> tags inherit when they don't
+   carry an explicit text-size-* utility. */
+p, a {
+  font-size: 1vw;
+  @media (max-width: 991px) {
+    font-size: 1rem;
+  }
+  @media (max-width: 767px) {
+    font-size: 0.9rem;
+  }
+}
+
+/* Mobile nav menu */
+.nav-menu_component {
+  z-index: 20;
+  width: 100%;
+  height: 100vh;
+  position: fixed;
+  inset: 0% auto 0% 0%;
+  display: flex;
+  background-color: rgba(12, 12, 12, 0.55);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  will-change: opacity;
+  transition: opacity 0.35s ease, visibility 0.35s ease;
+}
+
+.nav-menu_component.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.nav-menu {
+  background-color: var(--color-khaki);
+  display: flex;
+  flex-flow: column;
+  align-items: stretch;
+  width: 28vw;
+  height: 100vh;
+  padding: 2vw;
+  gap: 6vw;
+  transform: translateX(-100%);
+  will-change: transform;
+  transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+  @media (max-width: 991px) {
+    width: 25rem;
+    padding: 1.5rem 2rem;
+    gap: 6rem;
+  }
+  @media (max-width: 767px) {
+    width: 100%;
+  }
+}
+
+.nav-menu_component.is-open .nav-menu {
+  transform: translateX(0);
+}
+
+/* FAQ accordion */
+.faq-item_answer {
+  padding-left: 1.25vw;
+  padding-right: 1.25vw;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, opacity 0.3s ease;
+  @media (max-width: 991px) {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+  @media (max-width: 767px) {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+.faq-item_answer.is-open {
+  max-height: 30vw;
+  opacity: 1;
+  @media (max-width: 991px) {
+    /* Below this point answer text is set in fixed rem sizes (see the
+       body/p,a rules above), so it no longer shrinks with vw — a vw-based
+       cap here would clip long answers on narrow screens. */
+    max-height: 20rem;
+  }
+}
+
+.faq-item-icon {
+  transition: transform 0.3s ease;
+}
+
+.faq-item-icon.is-open {
+  transform: rotate(180deg);
+}
+
+} /* end @layer base */
+
+/* react-phone-input-2 theming for the contact form, to match the site's
+   other form fields (see BookingForm.tsx `inputClass`). */
+.contact-phone-input .react-tel-input {
+  font-family: inherit;
+}
+
+.contact-phone-input .react-tel-input .form-control {
+  width: 100%;
+  height: auto;
+  min-height: 3.5vw;
+  background-color: var(--color-beige);
+  border: 1px solid #ccc;
+  border-radius: 0.75vw;
+  padding: 1vw 1.25vw 1vw 5rem;
+  font-size: 0.875rem;
+  color: #333;
+}
+
+/* The flag icon, chevron, and dial-code text are all fixed-pixel-sized
+   (react-tel-input's own assets + a fixed font-size), so this whole
+   cluster is positioned in rem, not vw -- vw offsets here would drift out
+   of alignment with the fixed-size content as the viewport gets wider. */
+.contact-phone-input .contact-phone-dialcode {
+  position: absolute;
+  left: 2.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.875rem;
+  color: #333;
+  pointer-events: none;
+}
+
+.contact-phone-input .contact-phone-divider {
+  position: absolute;
+  left: 4.75rem;
+  top: 25%;
+  bottom: 25%;
+  width: 1px;
+  background-color: #ccc;
+  pointer-events: none;
+}
+
+.contact-phone-input .react-tel-input .form-control:focus {
+  border-color: #3898ec;
+  box-shadow: none;
+}
+
+/* Blend the flag/dial-code button into the surrounding pill instead of
+   rendering it as its own separately-bordered box. Widened so the flag,
+   dial code, and dropdown chevron all sit inside one click target, with
+   the chevron trailing the code (flag -> code -> chevron), not leading it. */
+.contact-phone-input .react-tel-input .flag-dropdown {
+  width: 4rem;
+  background-color: transparent;
+  border: none;
+}
+
+.contact-phone-input .react-tel-input .selected-flag {
+  width: 4rem;
+  padding-left: 0.75rem;
+  background-color: transparent;
+}
+
+/* .arrow is nested inside .flag (the flag-icon span), not a sibling of
+   .selected-flag, so its `left` is measured from the flag icon's own box
+   -- not from the wrapper the way .contact-phone-dialcode/-divider are.
+   Account for the flag icon's own offset (0.75rem padding + ~1rem icon
+   width) when placing it, or it drifts out of the flag -> code -> chevron
+   -> divider order. */
+.contact-phone-input .react-tel-input .selected-flag .arrow {
+  left: 3.4rem;
+}
+
+.contact-phone-input .react-tel-input .flag-dropdown.open,
+.contact-phone-input .react-tel-input .flag-dropdown.open .selected-flag,
+.contact-phone-input .react-tel-input .selected-flag:hover,
+.contact-phone-input .react-tel-input .selected-flag:focus {
+  background-color: transparent;
+}
+
+.contact-phone-input .react-tel-input .country-list {
+  border-radius: 0.5vw;
+  box-shadow: 0 0.25vw 1vw rgba(0, 0, 0, 0.15);
+}
+
+.contact-phone-input .react-tel-input .country-list .search {
+  padding: 0.5vw;
+}
+
+.contact-phone-input .react-tel-input .country-list .search-box {
+  border-radius: 0.4vw;
+  border: 1px solid #ccc;
+  margin-left: 0;
+  width: 100%;
+}
+
+@media (max-width: 991px) {
+  .contact-phone-input .react-tel-input .form-control {
+    min-height: 3rem;
+    border-radius: 0.5rem;
+  }
+
+  .contact-phone-input .react-tel-input .country-list {
+    border-radius: 0.5rem;
+  }
+
+  .contact-phone-input .react-tel-input .country-list .search-box {
+    border-radius: 0.35rem;
+  }
+}
+
+/* Amenities icons: an infinite draw-in/fill/erase cycle (used with the
+   pathLength="1" + stroke-dasharray trick, so stroke-dashoffset is
+   independent of each icon's actual path length). */
+@keyframes icon-draw-loop {
+  0% {
+    stroke-dashoffset: 1;
+    fill-opacity: 0;
+  }
+  28% {
+    stroke-dashoffset: 0;
+    fill-opacity: 0;
+  }
+  42% {
+    stroke-dashoffset: 0;
+    fill-opacity: 1;
+  }
+  72% {
+    stroke-dashoffset: 0;
+    fill-opacity: 1;
+  }
+  88%,
+  100% {
+    stroke-dashoffset: 1;
+    fill-opacity: 0;
+  }
+}
