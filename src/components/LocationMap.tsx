@@ -55,10 +55,10 @@ export default function LocationMap() {
         ></iframe>
         {!active && (
           <div
-            className="absolute inset-0 flex justify-center items-center bg-black/0 hover:bg-black/10 transition-colors cursor-pointer"
+            className="group absolute inset-0 flex justify-center items-center bg-black/0 hover:bg-black/10 transition-colors cursor-pointer"
             onClick={() => setActive(true)}
           >
-            <div className="bg-white/90 rounded-[2vw] px-[1.5vw] py-[0.75vw] text-base max-lg:text-sm max-lg:px-6 max-lg:py-3 max-lg:rounded-full">
+            <div className="bg-white/90 rounded-[2vw] px-[1.5vw] py-[0.75vw] text-base max-lg:text-sm max-lg:px-6 max-lg:py-3 max-lg:rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
               Click to interact with the map
             </div>
           </div>
